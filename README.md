@@ -1,93 +1,44 @@
-#### CFPB Open Source Project Template Instructions
+# cfgov_census
 
-1. Create a new project.
-2. [Copy these files into the new project](#installation)
-3. Update the README, replacing the contents below as prescribed.
-4. Add any libraries, assets, or hard dependencies whose source code will be included
-   in the project's repository to the _Exceptions_ section in the [TERMS](TERMS.md).
-  - If no exceptions are needed, remove that section from TERMS.
-5. If working with an existing code base, answer the questions on the [open source checklist](opensource-checklist.md)
-6. Delete these instructions and everything up to the _Project Title_ from the README.
-7. Write some great software and tell people about it.
+**Description**:  This is a [scrapy](https://scrapy.org/) crawler that we're using to better understand what-links-to-what on consumerfinance.gov
 
-> Keep the README fresh! It's the first thing people see and will make the initial impression.
+This has only been tested with Python 2.7
 
-## Installation
+## Setup
 
-To install all of the template files, run the following script from the root of your project's directory:
-
-```
-bash -c "$(curl -s https://raw.githubusercontent.com/CFPB/development/master/open-source-template.sh)"
-```
-
-----
-
-# Project Title
-
-**Description**:  Put a meaningful, short, plain-language description of what
-this project is trying to accomplish and why it matters.
-Describe the problem(s) this project solves.
-Describe how this software can improve the lives of its audience.
-
-Other things to include:
-
-  - **Technology stack**: Indicate the technological nature of the software, including primary programming language(s) and whether the software is intended as standalone or as a module in a framework or other ecosystem.
-  - **Status**:  Alpha, Beta, 1.1, etc. It's OK to write a sentence, too. The goal is to let interested people know where this project is at. This is also a good place to link to the [CHANGELOG](CHANGELOG.md).
-  - **Links to production or demo instances**
-  - Describe what sets this apart from related-projects. Linking to another doc or page is OK if this can't be expressed in a sentence or two.
-
-
-**Screenshot**: If the software has visual components, place a screenshot after the description; e.g.,
-
-![](https://raw.githubusercontent.com/cfpb/open-source-project-template/master/screenshot.png)
-
-
-## Dependencies
-
-Describe any dependencies that must be installed for this software to work.
-This includes programming languages, databases or other storage mechanisms, build tools, frameworks, and so forth.
-If specific versions of other software are required, or known not to work, call that out.
-
-## Installation
-
-Detailed instructions on how to install, configure, and get the project running.
-This should be frequently tested to ensure reliability. Alternatively, link to
-a separate [INSTALL](INSTALL.md) document.
-
-## Configuration
-
-If the software is configurable, describe it in detail, either here or in other documentation to which you link.
+Check this repo out, and (perhaps in a virtual environment), and `pip install -r requirements.txt`
 
 ## Usage
 
-Show users how to use the software.
-Be specific.
-Use appropriate formatting when showing code snippets.
+From the directory you've checked out, you should be able to run:
 
-## How to test the software
+`scrapy crawl cfgov`
+  
+This will produce two CSV files: one for every link found on every page, and one that shows the HTTP status (and redirect URL, if appropriate) of every URL fetched.
 
-If the software includes automated tests, detail how to run those tests.
+We plan to add additional code here for processing that data and generating various reports.
 
-## Known issues
+One thing you might want to do is load this data into sqlite. That can be done pretty easily:
 
-Document any known significant shortcomings with the software.
-
-## Getting help
-
-Instruct users how to get help with this software; this might include links to an issue tracker, wiki, mailing list, etc.
-
-**Example**
-
-If you have questions, concerns, bug reports, etc, please file an issue in this repository's Issue Tracker.
-
-## Getting involved
-
-This section should detail why people should get involved and describe key areas you are
-currently focusing on; e.g., trying to get feedback on features, fixing certain bugs, building
-important pieces, etc.
-
-General instructions on _how_ to contribute should be stated with a link to [CONTRIBUTING](CONTRIBUTING.md).
-
+```
+sqlite3 crawl.db
+SQLite version 3.16.0 2016-11-04 19:09:39
+Enter ".help" for usage hints.
+sqlite> .mode csv
+sqlite> .import links.csv links
+sqlite> .import results.csv results
+sqlite> select * from results where status = 404 limit 10;
+https://www.consumerfinance.gov/ask-cfpb/i-believe-that-my-rights-as-a-servicemember-have-been-violated-by-my-credit-card-bank-what-should-i-do-en-98/,404,""
+https://www.consumerfinance.gov/about-us/newsroom/prepared-remarks-cfpb-director-richard-cordray-people-and-places-conference/consumerfinance.gov,404,""
+https://www.consumerfinance.gov/ask-cfpb/if-i-am-in-the-united-states-military-what-should-i-do-if-the-house-or-apartment-im-renting-goes-into-foreclosure-en-1547/,404,""
+https://www.consumerfinance.gov/about-us/newsroom/press-resources/feed/,404,""
+https://www.consumerfinance.gov/ask-cfpb/i-wrote-a-check-and-someone-forged-the-endorsement-and-cashed-the-check-my-bankcredit-union-wont-return-my-money-to-my-account-am-i-responsible-en-995/,404,""
+https://www.consumerfinance.gov/ask-cfpb/should-i-use-a-debt-settlement-service-to-help-me-deal-with-my-debt-and-debt-collectors-en-1459/,404,""
+https://www.consumerfinance.gov/ask-cfpb/are-all-debt-settlement-services-legitimate-en-1461/,404,""
+https://www.consumerfinance.gov/ask-cfpb/i-am-a-servicemember-who-just-applied-for-an-auto-loan-when-i-reviewed-the-paperwork-i-noticed-that-en-877/,404,""
+https://www.consumerfinance.gov/ask-cfpb/what-is-credit-counseling-en-1451/askcfpb/1387/6-what-original-creditor-and-what-difference-between-original-creditor-and-debt-collector.html,404,""
+https://www.consumerfinance.gov/ask-cfpb/i-am-a-member-of-the-military-or-spousefamily-member-of-a-servicemember-and-i-think-i-have-a-loan-en-895/,404,""
+```
 
 ----
 
