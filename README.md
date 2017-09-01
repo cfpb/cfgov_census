@@ -6,7 +6,7 @@ This has only been tested with Python 2.7
 
 ## Setup
 
-Check this repo out, and (perhaps in a virtual environment), and `pip install -r requirements.txt`
+Check this repo out, and (perhaps in a virtual environment) `pip install -r requirements.txt`
 
 ## Usage
 
