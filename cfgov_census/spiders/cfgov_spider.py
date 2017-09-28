@@ -1,5 +1,17 @@
 import scrapy
+from urlnorm import norm, InvalidUrl
+from scrapy.utils.url import canonicalize_url, strip_url
 
+
+def clean_url(url):
+    url = strip_url(url)
+    url = url.replace('///','//')
+    url = canonicalize_url(url)
+    url = norm(url)
+    url = url.strip() # should be unneccessary?
+    if '..' in url:
+        url = url.replace('../', '')
+    return url
 
 class Link(scrapy.Item):
     source = scrapy.Field()
@@ -18,17 +30,18 @@ def filter_selector(selector):
     if url.startswith('#'):
         return False
 
-    if 'imprimir' in url:
-        return False
-
-    if 'form-id' in url:
-        return False
-
     if 'external-site' in url:
         return False
 
-    if 'filter' in url:
+    if 'mailto:' in url:
         return False
+
+    if 'feed:' in url:
+        return False
+
+    if 'tel:' in url:
+        return False
+
     return True
 
 
@@ -36,8 +49,8 @@ class CfgovSpider(scrapy.Spider):
     name = "cfgov"
     handle_httpstatus_list = [404, 301, 302, 500]
     allowed_domains = ['www.consumerfinance.gov',
-                       'files.consumerdinance.gov',
-                       's3.amazonaws.com'
+                       'files.consumerfinance.gov',
+                       's3.amazonaws.com',
                        ]
 
     def start_requests(self):
@@ -49,7 +62,7 @@ class CfgovSpider(scrapy.Spider):
 
     def parse(self, response):
         next = response.headers.get('Location')
-        yield Result(url=response.url, status=response.status, next=next)
+        yield Result(url=clean_url(response.url), status=response.status, next=next)
 
         if response.status in [301, 302]:
             yield scrapy.Request(url=next)
@@ -59,14 +72,22 @@ class CfgovSpider(scrapy.Spider):
             return
 
         try:
+            # try looking for links in '<main> tags first-- that should omit
+            # header and footer links. Otherwise, fall back to every link
             links = response.css('a::attr(href)')
         except scrapy.exceptions.NotSupported:
             # This just means that the response isn't HTML
             return
 
-        viable_links = filter(filter_selector, links)
+        viable_links = set(filter(filter_selector, links))
+        processed_links = []
         for link in viable_links:
-            destination = response.urljoin(link.extract().strip())
-            destination = destination.replace(':443','')
-            yield Link(source=response.url, destination=destination)
-            yield scrapy.Request(url=destination)
+            try:
+                destination = clean_url(response.urljoin(link.extract().strip()))
+            except InvalidUrl:
+                continue
+
+            if destination not in processed_links:
+                yield Link(source=response.url, destination=destination)
+                yield scrapy.Request(url=destination)
+                processed_links.append(destination)

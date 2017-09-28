@@ -14,6 +14,8 @@ BOT_NAME = 'cfgov_census'
 SPIDER_MODULES = ['cfgov_census.spiders']
 NEWSPIDER_MODULE = 'cfgov_census.spiders'
 
+LOG_FILE = 'errors.log'
+LOG_LEVEL = 'ERROR'
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'cfgov_census (+http://www.yourdomain.com)'
@@ -30,7 +32,7 @@ REDIRECT_ENABLED = False
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 3
 # The download delay setting will honor only one of:
-CONCURRENT_REQUESTS_PER_DOMAIN = 4
+CONCURRENT_REQUESTS_PER_DOMAIN = 2
 #CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
@@ -54,6 +56,7 @@ CONCURRENT_REQUESTS_PER_DOMAIN = 4
 # Enable or disable downloader middlewares
 # See http://scrapy.readthedocs.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
+    'cfgov_census.downloadermiddlewares.CFGOVMethodSelectingMiddleware':200,
     'scrapy.downloadermiddlewares.httpcache.HttpCacheMiddleware': 543,
 }
 
@@ -89,4 +92,5 @@ HTTPCACHE_ENABLED = True
 HTTPCACHE_DIR = './httpcache'
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
-HTTPCACHE_POLICY = 'scrapy.extensions.httpcache.DummyPolicy'
+HTTPCACHE_POLICY = 'scrapy.extensions.httpcache.RFC2616Policy'
+HTTPCACHE_EXPIRATION_SECS = 60 * 60 * 24 * 3
